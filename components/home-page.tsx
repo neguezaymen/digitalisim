@@ -1,6 +1,7 @@
 "use client";
 import { Company, Person } from "@prisma/client";
 import axios from "axios";
+import { LayoutDashboard } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Button } from "./ui/button";
 
@@ -21,6 +22,7 @@ const HomePage = ({ companies, persones }: HomePageProps) => {
   return (
     <main className="flex flex-col items-center h-full gap-4 pt-[200px] ">
       <h1 className="text-7xl">Bienvenue</h1>
+      <LayoutDashboard className="w-48 h-48" />
       {(companies.length === 0 || persones.length === 0) && (
         <p className="text-lg text-muted-foreground">
           Initialisez les donnés pour commencer
