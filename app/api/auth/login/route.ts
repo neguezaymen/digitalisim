@@ -56,7 +56,11 @@ export async function POST(req: Request) {
 
     return response;
   } catch (error) {
-    console.log(error);
+    if (error instanceof Error) {
+      console.log(error.message);
+    } else {
+      console.log(String(error));
+    }
     return new NextResponse("Erreur du serveur", { status: 500 });
   }
 }

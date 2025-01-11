@@ -30,7 +30,7 @@ const HomePage = ({ companies, persones }: HomePageProps) => {
       />
       {(companies.length === 0 || persones.length === 0) && (
         <p className="text-lg text-muted-foreground">
-          Initialisez les donnés pour commencer
+          Initialisez les données pour commencer
         </p>
       )}
       <div className="flex gap-4">
