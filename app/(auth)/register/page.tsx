@@ -9,7 +9,7 @@ export default function RegisterPage() {
         alt="logo"
         width={360}
         height={114}
-        className="p-4 bg-black"
+        className="p-4 m-4 bg-black"
       />
       <h1 className="text-4xl font-bold text-gray-800 mb-2">
         Créez votre compte

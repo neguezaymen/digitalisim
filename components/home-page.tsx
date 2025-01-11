@@ -24,11 +24,10 @@ const HomePage = ({ companies, persones }: HomePageProps) => {
       <Image
         src={"/Logo.svg"}
         alt="logo"
-        width={360}
-        height={114}
-        className="p-4 bg-black"
+        width={500}
+        height={170}
+        className="p-4 m-4 bg-black"
       />
-      <h1 className="text-7xl">Bienvenue</h1>
       {(companies.length === 0 || persones.length === 0) && (
         <p className="text-lg text-muted-foreground">
           Initialisez les donnés pour commencer

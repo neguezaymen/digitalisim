@@ -9,7 +9,7 @@ export default function LoginPage() {
         alt="logo"
         width={360}
         height={114}
-        className="p-4 bg-black"
+        className="p-4 m-4 bg-black"
       />
       <h1 className="text-4xl font-bold text-gray-800 mb-2">Bienvenue</h1>
       <p className="text-xl text-gray-600 mb-8 text-center">
