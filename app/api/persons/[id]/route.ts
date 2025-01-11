@@ -1,10 +1,8 @@
 import db from "@/lib/db";
 import { NextResponse } from "next/server";
 
-export async function DELETE(
-  req: Request,
-  { params }: { params: { id: string } }
-) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function DELETE(req: Request, { params }: any) {
   try {
     const { id } = params;
     if (!id) {
