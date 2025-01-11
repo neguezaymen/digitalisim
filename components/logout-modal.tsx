@@ -27,7 +27,7 @@ export function LogoutModal({ onLogout }: LogoutModalProps) {
         Déconnexion
       </Button>
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-[425px] w-5/6 md:w-full">
           <DialogHeader>
             <DialogTitle>Confirmer la déconnexion</DialogTitle>
             <DialogDescription>

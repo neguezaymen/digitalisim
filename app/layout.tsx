@@ -1,4 +1,3 @@
-import { ReactQueryProvider } from "@/lib/react-query-client";
 import type { Metadata } from "next";
 import { Roboto } from "next/font/google";
 import "./globals.css";
@@ -21,9 +20,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${roboto.variable} antialiased`}>
-        <ReactQueryProvider> {children}</ReactQueryProvider>
-      </body>
+      <body className={`${roboto.variable} antialiased`}>{children}</body>
     </html>
   );
 }

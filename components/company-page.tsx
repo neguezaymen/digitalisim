@@ -90,6 +90,9 @@ export function CompaniesPage({ initialCompanies }: CompaniesPageProps) {
 
   return (
     <div className="h-screen relative">
+      <Button onClick={handleAddCompany}>
+        <Plus className="mr-2 h-4 w-4" /> Ajouter une entreprise
+      </Button>
       {renderCompanies().length === 0 && (
         <p className="text-center text-muted-foreground">
           Aucune entreprise trouvée.
@@ -97,11 +100,7 @@ export function CompaniesPage({ initialCompanies }: CompaniesPageProps) {
       )}
       {renderCompanies().length !== 0 && (
         <>
-          <div className="flex justify-between items-center mb-6">
-            <Button onClick={handleAddCompany}>
-              <Plus className="mr-2 h-4 w-4" /> Ajouter une entreprise
-            </Button>
-          </div>
+          <div className="flex justify-between items-center mb-6"></div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {renderCompanies()}
           </div>

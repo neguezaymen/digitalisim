@@ -64,7 +64,7 @@ export function CompanyModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[425px] w-5/6 md:w-full">
         <DialogHeader>
           <DialogTitle>
             {company
@@ -129,7 +129,7 @@ export function CompanyModal({
             />
           </div>
         </div>
-        <DialogFooter>
+        <DialogFooter className=" flex flex-col md:flex md:flex-row gap-4">
           {isEditing ? (
             <Button onClick={handleSave}>Sauvegarder</Button>
           ) : (

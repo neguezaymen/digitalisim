@@ -44,7 +44,7 @@ export function FilterBar({ entityType }: FilterBarProps) {
       } else {
         params.delete("search");
       }
-      if (sortBy !== "name") {
+      if (sortBy === "name" || sortBy === "email") {
         params.set("sortBy", sortBy);
       } else {
         params.delete("sortBy");
@@ -63,7 +63,7 @@ export function FilterBar({ entityType }: FilterBarProps) {
   };
 
   return (
-    <div className="flex space-x-4 mb-6">
+    <div className="flex flex-col md:flex md:flex-row space-y-4 md:space-y-0 md:space-x-4 mb-6">
       <Input
         type="text"
         placeholder={`Rechercher ${
