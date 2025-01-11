@@ -35,11 +35,22 @@ export async function POST(req: Request) {
       data: { email, password: hashedPassword, name },
     });
 
-    const token = jwt.sign(
-      { id: newUser.id, email: newUser.email, name: newUser.name },
-      JWT_SECRET,
-      { expiresIn: JWT_EXPIRATION }
-    );
+    console.log("Utilisateur créé :", newUser);
+
+    if (!newUser || !newUser.id || !newUser.email || !newUser.name) {
+      throw new Error("Les données utilisateur sont invalides.");
+    }
+
+    const tokenPayload = {
+      id: newUser.id,
+      email: newUser.email,
+      name: newUser.name,
+    };
+    console.log("Payload JWT :", tokenPayload);
+
+    const token = jwt.sign(tokenPayload, JWT_SECRET, {
+      expiresIn: JWT_EXPIRATION,
+    });
 
     const response = new NextResponse(
       JSON.stringify({ message: "Utilisateur créé avec succès" }),
@@ -55,7 +66,7 @@ export async function POST(req: Request) {
 
     return response;
   } catch (error) {
-    console.log(error);
+    console.error("Erreur :", error);
     return new NextResponse("Erreur du serveur", { status: 500 });
   }
 }

@@ -1,7 +1,7 @@
 "use client";
 import { Company, Person } from "@prisma/client";
 import axios from "axios";
-import { LayoutDashboard } from "lucide-react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Button } from "./ui/button";
 
@@ -21,8 +21,14 @@ const HomePage = ({ companies, persones }: HomePageProps) => {
   };
   return (
     <main className="flex flex-col items-center h-full gap-4 pt-[200px] ">
+      <Image
+        src={"/Logo.svg"}
+        alt="logo"
+        width={360}
+        height={114}
+        className="p-4 bg-black"
+      />
       <h1 className="text-7xl">Bienvenue</h1>
-      <LayoutDashboard className="w-48 h-48" />
       {(companies.length === 0 || persones.length === 0) && (
         <p className="text-lg text-muted-foreground">
           Initialisez les donnés pour commencer
