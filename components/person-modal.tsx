@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Person } from "@prisma/client";
+import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -42,6 +43,8 @@ export function PersonModal({
   error,
 }: PersonModalProps) {
   const [isEditing, setIsEditing] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const {
     register,
@@ -65,9 +68,12 @@ export function PersonModal({
     } as Person;
 
     try {
+      setIsLoading(true);
       await onSave(personToSave);
     } catch (error) {
       console.log(error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -97,6 +103,14 @@ export function PersonModal({
   const handleClose = () => {
     setIsEditing(false);
     onClose();
+  };
+
+  const handleDeleting = async () => {
+    if (person) {
+      setIsDeleting(true);
+      await onDelete(person.id);
+      setIsDeleting(false);
+    }
   };
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
@@ -185,13 +199,21 @@ export function PersonModal({
           </div>
           <DialogFooter className="flex flex-col md:flex-row gap-4">
             {isEditing ? (
-              <Button type="submit">Sauvegarder</Button>
+              <Button type="submit" disabled={isLoading}>
+                Sauvegarder
+                {isLoading && <Loader2 className="animate-spin" />}
+              </Button>
             ) : (
               <Button onClick={handleModify}>Modifier</Button>
             )}
             {person && (
-              <Button variant="destructive" onClick={() => onDelete(person.id)}>
+              <Button
+                variant="destructive"
+                onClick={handleDeleting}
+                disabled={isDeleting}
+              >
                 Supprimer
+                {isDeleting && <Loader2 className="animate-spin" />}
               </Button>
             )}
           </DialogFooter>
