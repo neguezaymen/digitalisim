@@ -4,7 +4,7 @@ import Link from "next/link";
 
 export const Sidebar = () => {
   return (
-    <aside className="w-12 md:w-64 bg-white md:p-4 h-screen border-r border-gray-200">
+    <aside className="w-12 md:w-64 bg-white md:p-4 border-r border-gray-200">
       <nav className="space-y-2">
         <Link href="/companies" passHref>
           <Button

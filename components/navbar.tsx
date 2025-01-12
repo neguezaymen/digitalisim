@@ -19,7 +19,7 @@ export const Navbar = () => {
   };
 
   return (
-    <nav className="flex items-center justify-between p-4 bg-white text-gray-900">
+    <nav className="flex items-center justify-between p-4 bg-white text-gray-900 h-16">
       <div
         className="flex items-center space-x-4 cursor-pointer"
         onClick={() => router.push("/")}

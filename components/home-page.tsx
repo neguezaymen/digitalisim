@@ -20,7 +20,7 @@ const HomePage = ({ companies, persones }: HomePageProps) => {
     router.push("/persons");
   };
   return (
-    <main className="flex flex-col items-center h-full gap-4 pt-[200px] ">
+    <main className="flex flex-col items-center h-full gap-4 pt-[200px] bg-gray-100 ">
       <Image
         src={"/Logo.svg"}
         alt="logo"

@@ -1,4 +1,5 @@
 import db from "@/lib/db";
+import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
@@ -8,6 +9,14 @@ export async function POST(req: Request) {
     if (!firstname || !email || !phone || !lastname) {
       return new NextResponse("Missing required fields", { status: 401 });
     }
+    const person = await db.person.findFirst({
+      where: {
+        email,
+      },
+    });
+    if (person) {
+      return new NextResponse("Person already exists", { status: 401 });
+    }
     await db.person.create({
       data: {
         firstname,
@@ -16,6 +25,7 @@ export async function POST(req: Request) {
         phone,
       },
     });
+    revalidatePath("/persons");
     return new NextResponse("Success", { status: 201 });
   } catch (error: unknown) {
     console.error("Error fetching or saving companies:", error);

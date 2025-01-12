@@ -9,8 +9,20 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Company } from "@prisma/client";
 import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+
+const companySchema = z.object({
+  name: z.string().min(1, "Le nom est requis"),
+  email: z.string().email("Email invalide"),
+  phone: z.string().min(1, "Le téléphone est requis"),
+  website: z.string().url("URL invalide"),
+});
+
+type CompanyFormValues = z.infer<typeof companySchema>;
 
 interface CompanyModalProps {
   isOpen: boolean;
@@ -18,6 +30,7 @@ interface CompanyModalProps {
   company: Company | null;
   onSave: (company: Company) => void;
   onDelete: (id: number) => void;
+  error: string | null;
 }
 
 export function CompanyModal({
@@ -26,23 +39,49 @@ export function CompanyModal({
   company,
   onSave,
   onDelete,
+  error,
 }: CompanyModalProps) {
   const [isEditing, setIsEditing] = useState(false);
-  const [editedCompany, setEditedCompany] = useState<Company>({
-    id: 0,
-    name: "",
-    email: "",
-    phone: "",
-    website: "",
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<CompanyFormValues>({
+    resolver: zodResolver(companySchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      phone: "",
+      website: "",
+    },
   });
 
+  const onSubmit = async (data: CompanyFormValues) => {
+    const companyToSave = {
+      ...company,
+      ...data,
+      id: company ? company.id : Date.now(),
+    } as Company;
+
+    try {
+      await onSave(companyToSave);
+    } catch (error) {
+      console.log(error);
+    }
+  };
   useEffect(() => {
     if (company) {
-      setEditedCompany(company);
+      reset({
+        name: company.name,
+        email: company.email,
+        phone: company.phone,
+        website: company.website,
+      });
       setIsEditing(false);
     } else {
-      setEditedCompany({
-        id: Date.now(),
+      reset({
         name: "",
         email: "",
         phone: "",
@@ -50,20 +89,18 @@ export function CompanyModal({
       });
       setIsEditing(true);
     }
-  }, [company]);
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setEditedCompany({ ...editedCompany, [e.target.id]: e.target.value });
+  }, [company, reset]);
+  const handleModify = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsEditing(true);
   };
 
-  const handleSave = () => {
-    onSave(editedCompany);
+  const handleClose = () => {
     setIsEditing(false);
     onClose();
   };
-
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-[425px] w-5/6 md:w-full">
         <DialogHeader>
           <DialogTitle>
@@ -79,71 +116,85 @@ export function CompanyModal({
               : "Informations détaillées de l'entreprise."}
           </DialogDescription>
         </DialogHeader>
-        <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="name" className="text-right">
-              Nom
-            </Label>
-            <Input
-              id="name"
-              value={editedCompany.name}
-              onChange={handleInputChange}
-              className="col-span-3"
-              disabled={!isEditing}
-            />
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="name" className="text-right">
+                Nom
+              </Label>
+              <div className="col-span-3">
+                <Input id="name" {...register("name")} disabled={!isEditing} />
+                {errors.name && (
+                  <p className="text-red-500 text-sm">{errors.name.message}</p>
+                )}
+              </div>
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="email" className="text-right">
+                Email
+              </Label>
+              <div className="col-span-3">
+                <Input
+                  id="email"
+                  {...register("email")}
+                  disabled={!isEditing}
+                />
+                {errors.email && (
+                  <p className="text-red-500 text-sm">{errors.email.message}</p>
+                )}
+              </div>
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="phone" className="text-right">
+                Téléphone
+              </Label>
+              <div className="col-span-3">
+                <Input
+                  id="phone"
+                  {...register("phone")}
+                  disabled={!isEditing}
+                />
+                {errors.phone && (
+                  <p className="text-red-500 text-sm">{errors.phone.message}</p>
+                )}
+              </div>
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="website" className="text-right">
+                Site web
+              </Label>
+              <div className="col-span-3">
+                <Input
+                  id="website"
+                  {...register("website")}
+                  disabled={!isEditing}
+                />
+                {errors.website && (
+                  <p className="text-red-500 text-sm">
+                    {errors.website.message}
+                  </p>
+                )}
+              </div>
+            </div>
+            {error && <p className="text-red-500 text-sm">{error}</p>}
           </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="email" className="text-right">
-              Email
-            </Label>
-            <Input
-              id="email"
-              value={editedCompany.email}
-              onChange={handleInputChange}
-              className="col-span-3"
-              disabled={!isEditing}
-            />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="phone" className="text-right">
-              Téléphone
-            </Label>
-            <Input
-              id="phone"
-              value={editedCompany.phone}
-              onChange={handleInputChange}
-              className="col-span-3"
-              disabled={!isEditing}
-            />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="website" className="text-right">
-              Site web
-            </Label>
-            <Input
-              id="website"
-              value={editedCompany.website}
-              onChange={handleInputChange}
-              className="col-span-3"
-              disabled={!isEditing}
-            />
-          </div>
-        </div>
-        <DialogFooter className=" flex flex-col md:flex md:flex-row gap-4">
-          {isEditing ? (
-            <Button onClick={handleSave}>Sauvegarder</Button>
-          ) : (
-            <Button onClick={() => setIsEditing(true)}>Modifier</Button>
-          )}
-          {company && (
-            <Button
-              variant="destructive"
-              onClick={() => onDelete(editedCompany.id)}
-            >
-              Supprimer
-            </Button>
-          )}
-        </DialogFooter>
+
+          <DialogFooter className="flex flex-col md:flex-row gap-4">
+            {isEditing ? (
+              <Button type="submit">Sauvegarder</Button>
+            ) : (
+              <Button onClick={handleModify}>Modifier</Button>
+            )}
+            {company && (
+              <Button
+                variant="destructive"
+                onClick={() => onDelete(company.id)}
+              >
+                Supprimer
+              </Button>
+            )}
+          </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
   );

@@ -16,40 +16,54 @@ interface CompaniesPageProps {
 export function CompaniesPage({ initialCompanies }: CompaniesPageProps) {
   const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [companies, setCompanies] = useState<Company[]>(initialCompanies);
+  const [error, setError] = useState<string | null>(null);
   const searchParams = useSearchParams();
   const handleViewCompany = (company: Company) => {
     setSelectedCompany(company);
     setIsModalOpen(true);
   };
-
   const handleAddCompany = () => {
     setSelectedCompany(null);
     setIsModalOpen(true);
   };
 
-  const handleSaveCompany = (updatedCompany: Company) => {
-    if (selectedCompany) {
-      axios.patch("/api/companies", updatedCompany);
-      setCompanies(
-        companies.map((c) => (c.id === updatedCompany.id ? updatedCompany : c))
-      );
-    } else {
-      axios.post("/api/companies", updatedCompany);
-      setCompanies([...companies, updatedCompany]);
+  const handleSaveCompany = async (updatedCompany: Company) => {
+    try {
+      if (selectedCompany) {
+        await axios.patch("/api/companies", updatedCompany);
+      } else {
+        await axios.post("/api/companies", updatedCompany);
+      }
+
+      window.location.reload();
+      setIsModalOpen(false);
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        setError(error.response?.data || "An error occurred");
+      } else {
+        setError("An error occurred");
+      }
     }
-    setIsModalOpen(false);
   };
-  const handleDeleteCompany = (id: number) => {
-    axios.delete(`/api/companies/${id}`);
-    setCompanies(companies.filter((company) => company.id !== id));
-    setIsModalOpen(false);
+
+  const handleDeleteCompany = async (id: number) => {
+    try {
+      await axios.delete(`/api/companies/${id}`);
+      window.location.reload();
+      setIsModalOpen(false);
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        setError(error.response?.data || "An error occurred");
+      } else {
+        setError("An error occurred");
+      }
+    }
   };
   const filterAndSortCompanies = () => {
     const searchTerm = searchParams.get("search") || "";
     const sortBy = searchParams.get("sortBy") || "";
 
-    let filteredCompanies = companies;
+    let filteredCompanies = initialCompanies;
 
     if (searchTerm) {
       filteredCompanies = filteredCompanies?.filter((company) =>
@@ -89,7 +103,7 @@ export function CompaniesPage({ initialCompanies }: CompaniesPageProps) {
   };
 
   return (
-    <div className="h-screen relative">
+    <div className="relative h-full">
       <Button onClick={handleAddCompany}>
         <Plus className="mr-2 h-4 w-4" /> Ajouter une entreprise
       </Button>
@@ -112,6 +126,7 @@ export function CompaniesPage({ initialCompanies }: CompaniesPageProps) {
         company={selectedCompany}
         onSave={handleSaveCompany}
         onDelete={handleDeleteCompany}
+        error={error}
       />
     </div>
   );

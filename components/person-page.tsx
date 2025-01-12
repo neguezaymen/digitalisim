@@ -14,10 +14,10 @@ interface PersonsPageProps {
 }
 
 export function PersonsPage({ initialPersons }: PersonsPageProps) {
-  const [persons, setPersons] = useState<Person[]>(initialPersons);
   const [selectedPerson, setSelectedPerson] = useState<Person | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const searchParams = useSearchParams();
+  const [error, setError] = useState<string | null>(null);
 
   const handleViewPerson = (person: Person) => {
     setSelectedPerson(person);
@@ -28,31 +28,44 @@ export function PersonsPage({ initialPersons }: PersonsPageProps) {
     setSelectedPerson(null);
     setIsModalOpen(true);
   };
+  const handleSavePerson = async (updatedPerson: Person) => {
+    try {
+      if (selectedPerson) {
+        await axios.patch("/api/persons", updatedPerson);
+      } else {
+        await axios.post("/api/persons", updatedPerson);
+      }
 
-  const handleSavePerson = (updatedPerson: Person) => {
-    if (selectedPerson) {
-      axios.patch("/api/persons", updatedPerson);
-      setPersons(
-        persons.map((p) => (p.id === updatedPerson.id ? updatedPerson : p))
-      );
-    } else {
-      axios.post("/api/persons", updatedPerson);
-      setPersons([...persons, updatedPerson]);
+      window.location.reload();
+      setIsModalOpen(false);
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        setError(error.response?.data || "An error occurred");
+      } else {
+        setError("An error occurred");
+      }
     }
-    setIsModalOpen(false);
   };
 
-  const handleDeletePerson = (id: number) => {
-    axios.delete(`/api/persons/${id}`);
-    setPersons(persons.filter((person) => person.id !== id));
-    setIsModalOpen(false);
+  const handleDeletePerson = async (id: number) => {
+    try {
+      await axios.delete(`/api/persons/${id}`);
+      window.location.reload();
+      setIsModalOpen(false);
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        setError(error.response?.data || "An error occurred");
+      } else {
+        setError("An error occurred");
+      }
+    }
   };
 
   const filterAndSortPersons = () => {
     const searchTerm = searchParams.get("search") || "";
     const sortBy = searchParams.get("sortBy") || "name";
 
-    let filteredPersons = persons;
+    let filteredPersons = initialPersons;
 
     if (searchTerm) {
       filteredPersons = filteredPersons.filter((person) =>
@@ -91,7 +104,7 @@ export function PersonsPage({ initialPersons }: PersonsPageProps) {
   };
 
   return (
-    <div className="h-screen">
+    <div className="h-full">
       <div className="flex justify-between items-center mb-6">
         <Button onClick={handleAddPerson}>
           <Plus className="mr-2 h-4 w-4" /> Ajouter une personne
@@ -106,6 +119,7 @@ export function PersonsPage({ initialPersons }: PersonsPageProps) {
         person={selectedPerson}
         onSave={handleSavePerson}
         onDelete={handleDeletePerson}
+        error={error}
       />
     </div>
   );

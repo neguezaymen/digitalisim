@@ -9,8 +9,20 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Person } from "@prisma/client";
 import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+
+const personSchema = z.object({
+  firstname: z.string().min(1, "Le prénom est requis"),
+  lastname: z.string().min(1, "Le nom est requis"),
+  email: z.string().email("Email invalide"),
+  phone: z.string().min(1, "Le téléphone est requis"),
+});
+
+type PersonFormValues = z.infer<typeof personSchema>;
 
 interface PersonModalProps {
   isOpen: boolean;
@@ -18,6 +30,7 @@ interface PersonModalProps {
   person: Person | null;
   onSave: (person: Person) => void;
   onDelete: (id: number) => void;
+  error: string | null;
 }
 
 export function PersonModal({
@@ -26,23 +39,49 @@ export function PersonModal({
   person,
   onSave,
   onDelete,
+  error,
 }: PersonModalProps) {
   const [isEditing, setIsEditing] = useState(false);
-  const [editedPerson, setEditedPerson] = useState<Person>({
-    firstname: "",
-    lastname: "",
-    email: "",
-    phone: "",
-    id: 0,
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<PersonFormValues>({
+    resolver: zodResolver(personSchema),
+    defaultValues: {
+      firstname: "",
+      lastname: "",
+      email: "",
+      phone: "",
+    },
   });
+  const onSubmit = async (data: PersonFormValues) => {
+    const personToSave = {
+      ...person,
+      ...data,
+      id: person ? person.id : Date.now(),
+    } as Person;
+
+    try {
+      await onSave(personToSave);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   useEffect(() => {
     if (person) {
-      setEditedPerson(person);
+      reset({
+        firstname: person.firstname,
+        lastname: person.lastname,
+        email: person.email,
+        phone: person.phone,
+      });
       setIsEditing(false);
     } else {
-      setEditedPerson({
-        id: Date.now(),
+      reset({
         firstname: "",
         lastname: "",
         email: "",
@@ -50,20 +89,17 @@ export function PersonModal({
       });
       setIsEditing(true);
     }
-  }, [person]);
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setEditedPerson({ ...editedPerson, [e.target.id]: e.target.value });
+  }, [person, reset]);
+  const handleModify = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsEditing(true);
   };
-
-  const handleSave = () => {
-    onSave(editedPerson);
+  const handleClose = () => {
     setIsEditing(false);
     onClose();
   };
-
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-[425px] w-5/6 md:w-full">
         <DialogHeader>
           <DialogTitle>
@@ -79,71 +115,87 @@ export function PersonModal({
               : "Informations détaillées de la personne."}
           </DialogDescription>
         </DialogHeader>
-        <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="firstname" className="text-right">
-              Prénom
-            </Label>
-            <Input
-              id="firstname"
-              value={editedPerson.firstname}
-              onChange={handleInputChange}
-              className="col-span-3"
-              disabled={!isEditing}
-            />
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="firstname" className="text-right">
+                Prénom
+              </Label>
+              <div className="col-span-3">
+                <Input
+                  id="firstname"
+                  {...register("firstname")}
+                  disabled={!isEditing}
+                />
+                {errors.firstname && (
+                  <p className="text-red-500 text-sm">
+                    {errors.firstname.message}
+                  </p>
+                )}
+              </div>
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="lastname" className="text-right">
+                Nom
+              </Label>
+              <div className="col-span-3">
+                <Input
+                  id="lastname"
+                  {...register("lastname")}
+                  disabled={!isEditing}
+                />
+                {errors.lastname && (
+                  <p className="text-red-500 text-sm">
+                    {errors.lastname.message}
+                  </p>
+                )}
+              </div>
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="email" className="text-right">
+                Email
+              </Label>
+              <div className="col-span-3">
+                <Input
+                  id="email"
+                  {...register("email")}
+                  disabled={!isEditing}
+                />
+                {errors.email && (
+                  <p className="text-red-500 text-sm">{errors.email.message}</p>
+                )}
+              </div>
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="phone" className="text-right">
+                Téléphone
+              </Label>
+              <div className="col-span-3">
+                <Input
+                  id="phone"
+                  {...register("phone")}
+                  disabled={!isEditing}
+                />
+                {errors.phone && (
+                  <p className="text-red-500 text-sm">{errors.phone.message}</p>
+                )}
+              </div>
+            </div>
+            {error && <p className="text-red-500 text-sm">{error}</p>}
           </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="lastname" className="text-right">
-              Nom
-            </Label>
-            <Input
-              id="lastname"
-              value={editedPerson.lastname}
-              onChange={handleInputChange}
-              className="col-span-3"
-              disabled={!isEditing}
-            />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="email" className="text-right">
-              Email
-            </Label>
-            <Input
-              id="email"
-              value={editedPerson.email}
-              onChange={handleInputChange}
-              className="col-span-3"
-              disabled={!isEditing}
-            />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="phone" className="text-right">
-              Téléphone
-            </Label>
-            <Input
-              id="phone"
-              value={editedPerson.phone}
-              onChange={handleInputChange}
-              className="col-span-3"
-              disabled={!isEditing}
-            />
-          </div>
-        </div>
-        <DialogFooter className=" flex flex-col md:flex md:flex-row gap-4">
-          {isEditing ? (
-            <Button onClick={handleSave}>Sauvegarder</Button>
-          ) : (
-            <Button onClick={() => setIsEditing(true)}>Modifier</Button>
-          )}
-          {person && (
-            <Button
-              variant="destructive"
-              onClick={() => onDelete(editedPerson.id)}
-            >
-              Supprimer
-            </Button>
-          )}
-        </DialogFooter>
+          <DialogFooter className="flex flex-col md:flex-row gap-4">
+            {isEditing ? (
+              <Button type="submit">Sauvegarder</Button>
+            ) : (
+              <Button onClick={handleModify}>Modifier</Button>
+            )}
+            {person && (
+              <Button variant="destructive" onClick={() => onDelete(person.id)}>
+                Supprimer
+              </Button>
+            )}
+          </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
   );

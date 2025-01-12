@@ -19,9 +19,9 @@ export default async function RootLayout({
       <div className="min-h-screen flex flex-col">
         <Navbar />
         <Separator />
-        <div className="flex flex-1">
+        <div className="flex flex-1 h-full">
           <Sidebar />
-          <main className="flex-1 p-2 md:p-6">{children}</main>
+          <main className="flex-1">{children}</main>
         </div>
       </div>
     </UserContextProvider>

@@ -12,6 +12,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
 import axios from "axios";
+import { Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -36,8 +37,10 @@ const LoginForm = () => {
   });
   const router = useRouter();
   const [loginError, setLoginError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const onSubmit = async (data: LoginFormData) => {
     try {
+      setIsLoading(true);
       await axios.post("/api/auth/login", data);
       router.push("/");
     } catch (error) {
@@ -46,6 +49,8 @@ const LoginForm = () => {
       } else {
         setLoginError("An unexpected error occurred");
       }
+    } finally {
+      setIsLoading(false);
     }
   };
   return (
@@ -86,8 +91,13 @@ const LoginForm = () => {
             </div>
           </div>
           <p className="py-2 text-red-500">{loginError}</p>
-          <Button className="w-full mt-8 h-12 text-lg" type="submit">
+          <Button
+            className="w-full mt-8 h-12 text-lg"
+            type="submit"
+            disabled={isLoading}
+          >
             Se connecter
+            {isLoading && <Loader2 className="animate-spin" />}
           </Button>
         </form>
       </CardContent>
