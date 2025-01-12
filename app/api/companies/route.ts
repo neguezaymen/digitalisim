@@ -7,7 +7,7 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { name, email, phone, website } = body;
     if (!name || !email || !phone || !website) {
-      return new NextResponse("Missing required fields", { status: 401 });
+      return new NextResponse("Missing required fields", { status: 400 });
     }
     const company = await db.company.findFirst({
       where: {
@@ -15,7 +15,7 @@ export async function POST(req: Request) {
       },
     });
     if (company) {
-      return new NextResponse("Company already exists", { status: 401 });
+      return new NextResponse("Company already exists", { status: 400 });
     }
     await db.company.create({
       data: {
@@ -39,7 +39,7 @@ export async function PATCH(req: Request) {
     const body = await req.json();
     const { id, name, email, phone, website } = body;
     if (!id || !name || !email || !phone || !website) {
-      return new NextResponse("Missing required fields", { status: 401 });
+      return new NextResponse("Missing required fields", { status: 400 });
     }
     await db.company.update({
       where: { id },

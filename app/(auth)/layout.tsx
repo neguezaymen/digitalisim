@@ -6,8 +6,8 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const user = await verifyToken();
-  if (user) {
+  const token = await verifyToken();
+  if (token) {
     redirect("/");
   }
   return <>{children}</>;

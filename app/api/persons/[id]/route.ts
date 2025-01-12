@@ -7,7 +7,7 @@ export async function DELETE(req: Request, { params }: any) {
   try {
     const { id } = params;
     if (!id) {
-      return new NextResponse("Missing required fields", { status: 401 });
+      return new NextResponse("Missing required fields", { status: 400 });
     }
     await db.person.delete({
       where: { id: Number(id) },
