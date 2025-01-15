@@ -4,7 +4,7 @@ import db from "@/lib/db";
 export default async function CompaniesServerPage({
   searchParams,
 }: {
-  params: { [key: string]: string };
+  params: Promise<{ [key: string]: string }>;
   searchParams: Promise<{ [key: string]: string | undefined }>;
 }) {
   const dbCompanies = await db.company.findMany();

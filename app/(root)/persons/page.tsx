@@ -4,7 +4,7 @@ import db from "@/lib/db";
 export default async function PersonsServerPage({
   searchParams,
 }: {
-  params: { [key: string]: string };
+  params: Promise<{ [key: string]: string }>;
   searchParams: Promise<{ [key: string]: string | undefined }>;
 }) {
   const dbPersons = await db.person.findMany();
