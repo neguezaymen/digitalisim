@@ -1,3 +1,4 @@
+"use client";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -9,8 +10,11 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { usePersonModal } from "@/hooks/usePersonModal";
+import { handleError } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Person } from "@prisma/client";
+import axios from "axios";
 import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -25,27 +29,12 @@ const personSchema = z.object({
 
 type PersonFormValues = z.infer<typeof personSchema>;
 
-interface PersonModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  person: Person | null;
-  onSave: (person: Person) => void;
-  onDelete: (id: number) => void;
-  error: string | null;
-}
-
-export function PersonModal({
-  isOpen,
-  onClose,
-  person,
-  onSave,
-  onDelete,
-  error,
-}: PersonModalProps) {
+export function PersonModal() {
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-
+  const [error, setError] = useState("");
+  const { data: person, isOpen, onClose } = usePersonModal();
   const {
     register,
     handleSubmit,
@@ -60,6 +49,30 @@ export function PersonModal({
       phone: "",
     },
   });
+
+  const handleSavePerson = async (updatedPerson: Person) => {
+    try {
+      if (person) {
+        await axios.patch("/api/persons", updatedPerson);
+      } else {
+        await axios.post("/api/persons", updatedPerson);
+      }
+      window.location.reload();
+      onClose();
+    } catch (error) {
+      setError(handleError(error));
+    }
+  };
+
+  const handleDeletePerson = async (id: number) => {
+    try {
+      await axios.delete(`/api/persons/${id}`);
+      window.location.reload();
+      onClose();
+    } catch (error) {
+      setError(handleError(error));
+    }
+  };
   const onSubmit = async (data: PersonFormValues) => {
     const personToSave = {
       ...person,
@@ -69,7 +82,7 @@ export function PersonModal({
 
     try {
       setIsLoading(true);
-      await onSave(personToSave);
+      await handleSavePerson(personToSave);
     } catch (error) {
       console.log(error);
     } finally {
@@ -96,6 +109,7 @@ export function PersonModal({
       setIsEditing(true);
     }
   }, [person, reset]);
+
   const handleModify = (e: React.MouseEvent) => {
     e.preventDefault();
     setIsEditing(true);
@@ -108,7 +122,7 @@ export function PersonModal({
   const handleDeleting = async () => {
     if (person) {
       setIsDeleting(true);
-      await onDelete(person.id);
+      await handleDeletePerson(person.id);
       setIsDeleting(false);
     }
   };
@@ -139,7 +153,7 @@ export function PersonModal({
                 <Input
                   id="firstname"
                   {...register("firstname")}
-                  disabled={!isEditing}
+                  disabled={!isEditing && !!person}
                 />
                 {errors.firstname && (
                   <p className="text-red-500 text-sm">
@@ -173,7 +187,7 @@ export function PersonModal({
                 <Input
                   id="email"
                   {...register("email")}
-                  disabled={!isEditing}
+                  disabled={!isEditing && !!person}
                 />
                 {errors.email && (
                   <p className="text-red-500 text-sm">{errors.email.message}</p>
@@ -188,7 +202,7 @@ export function PersonModal({
                 <Input
                   id="phone"
                   {...register("phone")}
-                  disabled={!isEditing}
+                  disabled={!isEditing && !!person}
                 />
                 {errors.phone && (
                   <p className="text-red-500 text-sm">{errors.phone.message}</p>
@@ -198,7 +212,7 @@ export function PersonModal({
             {error && <p className="text-red-500 text-sm">{error}</p>}
           </div>
           <DialogFooter className="flex flex-col md:flex-row gap-4">
-            {isEditing ? (
+            {isEditing || !person ? (
               <Button type="submit" disabled={isLoading}>
                 Sauvegarder
                 {isLoading && <Loader2 className="animate-spin" />}
